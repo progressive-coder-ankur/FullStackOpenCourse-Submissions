@@ -1,15 +1,18 @@
-import { useState } from 'react';
-import './normalize.css';
-import './App.css';
+import { useState, useEffect } from 'react';
+import Filter from './components/Filter';
+import PersonForm from './components/PersonForm';
+import Persons from './components/Persons';
+import axios from 'axios';
+
+const URL = 'http://localhost:3001/persons';
 
 function App() {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '+1845877827' },
-    { name: 'Ankur Singh', number: '+9779855082196' },
-  ]);
+  const [persons, setPersons] = useState([]);
 
   const [newPerson, setNewPerson] = useState('');
   const [newNumber, setNewNumber] = useState('');
+  const [searchValue, setSearchValue] = useState('');
+  const [filteredPersons, setFilteredPersons] = useState(null);
 
   const handleNameChange = e => {
     e.preventDefault();
@@ -21,6 +24,14 @@ function App() {
     setNewNumber(e.target.value);
   };
 
+  const handleSearchChange = e => {
+    e.preventDefault();
+    setSearchValue(e.target.value);
+    setFilteredPersons(
+      persons.filter(person => person.name.includes(searchValue))
+    );
+  };
+
   const checkNewPersonName = () => {
     const filtered = persons.filter(person => person.name === newPerson);
     return filtered.length > 0 ? true : false;
@@ -30,43 +41,42 @@ function App() {
     event.preventDefault();
     checkNewPersonName === true
       ? alert(`${newPerson} is already added to phonebook`)
-      : setPersons(persons.concat({ name: newPerson, number: newNumber }));
+      : setPersons(
+          persons.concat({
+            name: newPerson,
+            number: newNumber,
+            id: persons[persons.length - 1].id + 1,
+          })
+        );
     setNewPerson('');
     setNewNumber('');
   };
 
+  useEffect(() => {
+    axios.get(URL).then(res => setPersons(res.data));
+  }, []);
+
   return (
     <div className='App'>
       <h2>Phonebook</h2>
-      <form onSubmit={addPerson}>
-        <label for='name'>
-          Name:{' '}
-          <input
-            name='name'
-            id='name'
-            value={newPerson}
-            onChange={e => handleNameChange(e)}
-          />
-        </label>
-        <label for='number'>
-          Number:{' '}
-          <input
-            id='number'
-            name='number'
-            value={newNumber}
-            onChange={e => handleNumberChange(e)}
-          />
-        </label>
-        <div>
-          <button type='submit'>Add</button>
-        </div>
-      </form>
-      <h2>Numbers</h2>
-      {persons.map(person => (
-        <div key={person.name}>
-          {person.name} {person.number}
-        </div>
-      ))}
+      <Filter
+        searchValue={searchValue}
+        handleSearchChange={handleSearchChange}
+      />
+
+      <PersonForm
+        handleNameChange={handleNameChange}
+        handleNumberChange={handleNumberChange}
+        addPerson={addPerson}
+        newPerson={newPerson}
+        newNumber={newNumber}
+      />
+
+      <Persons
+        searchValue={searchValue}
+        persons={persons}
+        filteredPersons={filteredPersons}
+      />
     </div>
   );
 }

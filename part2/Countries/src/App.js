@@ -15,7 +15,9 @@ function App() {
   const URL = 'https://restcountries.com/v3.1/all';
   const Length = filteredCountries.length;
   const API_KEY = process.env.REACT_APP_OPEN_WEATHER_API_KEY;
-  const QueryURL = `https://api.openweathermap.org/data/2.5/weather?q=${queryString}&appid=9681c4b68a89ed3c67e4d73c3c8e1c2d`;
+  const QueryURL = `https://api.openweathermap.org/data/2.5/weather?q=${queryString}&units=metric&appid=${API_KEY}`;
+
+  
   const handleSearchChange = e => {
     e.preventDefault();
     setSearchValue(e.target.value);
@@ -34,7 +36,7 @@ function App() {
 
   useEffect(() => {
     axios.get(QueryURL).then(res => setWeather(res.data));
-  }, [queryString]);
+  }, [queryString, QueryURL]);
 
   useEffect(() => {
     searchValue === ''
@@ -44,7 +46,7 @@ function App() {
             country.name.common.toLowerCase().includes(searchValue)
           )
         );
-  }, [searchValue]);
+  }, [searchValue, countries]);
 
   return (
     <div className='App'>
@@ -111,7 +113,7 @@ const SingleCountry = ({ name, capital, area, languages, flags, weather }) => {
       <div>
         <img alt={name + '-country-flag'} src={flags.png} />
       </div>
-      <WeatherInfo name={name} />
+      <WeatherInfo name={name} weather={weather} />
     </div>
   );
 };
@@ -120,7 +122,12 @@ const WeatherInfo = ({ name, weather }) => {
   return (
     <div>
       <h2 className='weather-title'>Weather in {name} </h2>
-      <pre>{weather}</pre>
+      <p>Temperature: {weather.main.temp}</p>
+      <p>Wind: {weather.wind.speed}</p>
+      <img
+        src={` http://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`}
+        alt='weather-icon'
+      />
     </div>
   );
 };

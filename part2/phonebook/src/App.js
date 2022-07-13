@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react';
 import Filter from './components/Filter';
 import PersonForm from './components/PersonForm';
 import Persons from './components/Persons';
-import axios from 'axios';
-
-const URL = 'http://localhost:3001/persons';
+import phonebookService from './services/phonebook';
+import Notification from './components/Notification';
 
 function App() {
   const [persons, setPersons] = useState([]);
@@ -12,7 +11,8 @@ function App() {
   const [newPerson, setNewPerson] = useState('');
   const [newNumber, setNewNumber] = useState('');
   const [searchValue, setSearchValue] = useState('');
-  const [filteredPersons, setFilteredPersons] = useState(null);
+  const [filteredPersons, setFilteredPersons] = useState([]);
+  const [errormsg, setErrormsg] = useState(null);
 
   const handleNameChange = e => {
     e.preventDefault();
@@ -28,37 +28,126 @@ function App() {
     e.preventDefault();
     setSearchValue(e.target.value);
     setFilteredPersons(
-      persons.filter(person => person.name.includes(searchValue))
+      persons.filter(person => person.name.toLowerCase().includes(searchValue))
     );
   };
 
   const checkNewPersonName = () => {
     const filtered = persons.filter(person => person.name === newPerson);
-    return filtered.length > 0 ? true : false;
-  };
+    const newPersonObject = {
+      name: newPerson,
+      number: newNumber,
+    };
 
-  const addPerson = event => {
-    event.preventDefault();
-    checkNewPersonName === true
-      ? alert(`${newPerson} is already added to phonebook`)
-      : setPersons(
-          persons.concat({
-            name: newPerson,
-            number: newNumber,
-            id: persons[persons.length - 1].id + 1,
+    if (filtered.length > 0) {
+      if (
+        window.confirm(
+          `${newPerson} is already added to the phonebook, do you want to change the number ?`
+        )
+      ) {
+        phonebookService
+          .updatePerson(filtered[0].id, newPersonObject)
+          .then(res =>
+            setPersons(
+              persons.map(p => (p.id !== filtered[0].id ? p : res.data))
+            )
+          )
+          .then(() => {
+            setErrormsg({
+              msg: `${newPerson} number updated succesfully`,
+              type: 'success',
+            });
+            setTimeout(() => {
+              setErrormsg(null);
+            }, 5000);
           })
-        );
+
+          .catch(error => {
+            setErrormsg({
+              msg: `Something went wrong, ${error.message}`,
+              type: 'failed',
+            });
+
+            setTimeout(() => {
+              setErrormsg(null);
+            }, 5000);
+          });
+      }
+    } else {
+      phonebookService
+        .createNewPerson(newPersonObject)
+        .then(res => setPersons(persons.concat(res.data)))
+        .then(() => {
+          setErrormsg({
+            msg: `${newPerson} was added succesfully`,
+            type: 'success',
+          });
+          setTimeout(() => {
+            setErrormsg(null);
+          }, 5000);
+        })
+        .catch(error => {
+          setErrormsg({
+            msg: `Something went wrong, ${error.message}`,
+            type: 'failed',
+          });
+
+          setTimeout(() => {
+            setErrormsg(null);
+          }, 5000);
+        });
+    }
     setNewPerson('');
     setNewNumber('');
   };
 
+  const addPerson = event => {
+    event.preventDefault();
+    checkNewPersonName();
+  };
+
+  const handleDelete = id => {
+    const name = persons.find(p => p.id === id).name;
+    if (window.confirm(`Delete ${name}  ?`)) {
+      phonebookService
+        .deletePerson(id)
+        .then(setPersons(persons.filter(p => p.id !== id)))
+        .then(() => {
+          setErrormsg({
+            msg: `${name} was deleted succesfully`,
+            type: 'success',
+          });
+          setTimeout(() => {
+            setErrormsg(null);
+          }, 5000);
+        })
+        .catch(error => {
+          setErrormsg({
+            msg: ` Information of ${name} has been already removed from the server, ${error.message}`,
+            type: 'failed',
+          });
+
+          console.log(error);
+
+          setTimeout(() => {
+            setErrormsg(null);
+          }, 5000);
+        });
+    }
+  };
+
+  const closeNotification = () => {
+    setErrormsg(null);
+  };
+
   useEffect(() => {
-    axios.get(URL).then(res => setPersons(res.data));
+    phonebookService.getAllPersons().then(res => setPersons(res.data));
   }, []);
 
   return (
     <div className='App'>
       <h2>Phonebook</h2>
+      <Notification error={errormsg} close={closeNotification} />
       <Filter
         searchValue={searchValue}
         handleSearchChange={handleSearchChange}
@@ -76,6 +165,7 @@ function App() {
         searchValue={searchValue}
         persons={persons}
         filteredPersons={filteredPersons}
+        handleDelete={handleDelete}
       />
     </div>
   );

@@ -4,7 +4,7 @@ const Filter = ({ searchValue, handleSearchChange }) => {
       name='search'
       placeholder='search contacts'
       value={searchValue}
-      onChange={handleSearchChange}
+      onChange={e => handleSearchChange(e)}
     />
   );
 };

@@ -2,6 +2,7 @@ const express = require('express');
 const morgan = require('morgan');
 const app = express();
 const cors = require('cors');
+app.use(express.static('build'));
 
 app.use(express.json());
 
@@ -43,10 +44,6 @@ const generateId = () => {
   const maxId = persons.length > 0 ? Math.max(...persons.map(p => p.id)) : 0;
   return maxId + 1;
 };
-
-app.get('/', (request, response) => {
-  response.send('<h1>Phonebook App</h1>');
-});
 
 app.get('/info', (request, response) => {
   response.send(

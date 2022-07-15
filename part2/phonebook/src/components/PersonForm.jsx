@@ -6,7 +6,7 @@ const PersonForm = ({
   handleNumberChange,
 }) => {
   return (
-    <form onSubmit={addPerson}>
+    <form className='person-form' onSubmit={addPerson}>
       <h3>Add new person</h3>
       <div>
         <label htmlFor='name'>Name</label>
@@ -29,7 +29,9 @@ const PersonForm = ({
         />
       </div>
       <div className='add'>
-        <button type='submit'>Add</button>
+        <button className='add-button' type='submit'>
+          Add
+        </button>
       </div>
     </form>
   );

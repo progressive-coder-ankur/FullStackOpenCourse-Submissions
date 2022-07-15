@@ -146,13 +146,8 @@ function App() {
 
   return (
     <div className='App'>
-      <h2>Phonebook</h2>
+      <h2 className='main-title'>Phonebook</h2>
       <Notification error={errormsg} close={closeNotification} />
-      <Filter
-        searchValue={searchValue}
-        handleSearchChange={handleSearchChange}
-      />
-
       <PersonForm
         handleNameChange={handleNameChange}
         handleNumberChange={handleNumberChange}
@@ -160,6 +155,15 @@ function App() {
         newPerson={newPerson}
         newNumber={newNumber}
       />
+
+      <div className='search-section'>
+        <h3>Numbers</h3>
+
+        <Filter
+          searchValue={searchValue}
+          handleSearchChange={handleSearchChange}
+        />
+      </div>
 
       <Persons
         searchValue={searchValue}

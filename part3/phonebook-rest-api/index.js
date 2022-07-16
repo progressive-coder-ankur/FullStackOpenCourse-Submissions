@@ -1,7 +1,20 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const morgan = require('morgan');
-const app = express();
 const cors = require('cors');
+const app = express();
+
+const Pwd = 'p33S2H8nGOxQFJyt';
+
+const url = `mongodb+srv://fullstack-phonebook:${Pwd}@cluster0.3i2quha.mongodb.net/phonebookApp?retryWrites=true&w=majority`;
+mongoose.connect(url);
+const ContactSchema = new mongoose.Schema({
+  name: String,
+  number: String,
+});
+
+const Contact = mongoose.model('Contact', ContactSchema);
+
 app.use(express.static('build'));
 
 app.use(express.json());
@@ -54,14 +67,21 @@ app.get('/info', (request, response) => {
 });
 
 app.get('/api/persons', (req, res) => {
-  res.json(persons);
+  Contact.find({}).then(person => {
+    res.json(person);
+  });
 });
 
 app.get('/api/persons/:id', (request, response) => {
-  const Id = Number(request.params.id);
-  const Person = persons.find(p => p.id === Id);
-
-  Person ? response.json(Person) : response.status(404).end();
+  const Id = request.params.id;
+  Contact.find({ name: Id })
+    .then(person => {
+      response.json(person);
+    })
+    .catch(err => {
+      console.log(err);
+      response.status(404).end();
+    });
 });
 
 app.use(

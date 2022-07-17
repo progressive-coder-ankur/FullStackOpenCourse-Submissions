@@ -13,7 +13,6 @@ const PersonForm = ({
         <input
           name='name'
           id='name'
-          required
           value={newPerson}
           onChange={e => handleNameChange(e)}
         />
@@ -24,7 +23,6 @@ const PersonForm = ({
           id='number'
           name='number'
           value={newNumber}
-          required
           onChange={e => handleNumberChange(e)}
         />
       </div>

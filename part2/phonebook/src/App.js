@@ -12,7 +12,7 @@ function App() {
   const [newNumber, setNewNumber] = useState('');
   const [searchValue, setSearchValue] = useState('');
   const [filteredPersons, setFilteredPersons] = useState([]);
-  const [errormsg, setErrormsg] = useState(null);
+  const [notification, setNotification] = useState(null);
 
   const handleNameChange = e => {
     e.preventDefault();
@@ -47,53 +47,51 @@ function App() {
       ) {
         phonebookService
           .updatePerson(filtered[0].id, newPersonObject)
-          .then(res =>
+          .then(res => {
             setPersons(
               persons.map(p => (p.id !== filtered[0].id ? p : res.data))
-            )
-          )
-          .then(() => {
-            setErrormsg({
+            );
+            setNotification({
               msg: `${newPerson} number updated succesfully`,
               type: 'success',
             });
             setTimeout(() => {
-              setErrormsg(null);
+              setNotification(null);
             }, 5000);
           })
-
           .catch(error => {
-            setErrormsg({
+            setNotification({
               msg: `Something went wrong, ${error.message}`,
-              type: 'failed',
+              type: 'error',
             });
 
             setTimeout(() => {
-              setErrormsg(null);
+              setNotification(null);
             }, 5000);
           });
       }
     } else {
       phonebookService
         .createNewPerson(newPersonObject)
-        .then(res => setPersons(persons.concat(res.data)))
-        .then(() => {
-          setErrormsg({
+        .then(res => {
+          setPersons(persons.concat(res.data));
+          setNotification({
             msg: `${newPerson} was added succesfully`,
             type: 'success',
           });
           setTimeout(() => {
-            setErrormsg(null);
+            setNotification(null);
           }, 5000);
         })
         .catch(error => {
-          setErrormsg({
-            msg: `Something went wrong, ${error.message}`,
-            type: 'failed',
+          console.log(error);
+          setNotification({
+            msg: `Something went wrong, ${error.response.data}`,
+            type: 'error',
           });
 
           setTimeout(() => {
-            setErrormsg(null);
+            setNotification(null);
           }, 5000);
         });
     }
@@ -111,33 +109,31 @@ function App() {
     if (window.confirm(`Delete ${name}  ?`)) {
       phonebookService
         .deletePerson(id)
-        .then(setPersons(persons.filter(p => p.id !== id)))
-        .then(() => {
-          setErrormsg({
+        .then(res => {
+          setPersons(persons.filter(p => p.id !== id));
+          console.log(res.data);
+          setNotification({
             msg: `${name} was deleted succesfully`,
             type: 'success',
           });
           setTimeout(() => {
-            setErrormsg(null);
+            setNotification(null);
           }, 5000);
         })
         .catch(error => {
-          setErrormsg({
+          setNotification({
             msg: ` Information of ${name} has been already removed from the server, ${error.message}`,
-            type: 'failed',
+            type: 'error',
           });
-
-          console.log(error);
-
           setTimeout(() => {
-            setErrormsg(null);
+            setNotification(null);
           }, 5000);
         });
     }
   };
 
   const closeNotification = () => {
-    setErrormsg(null);
+    setNotification(null);
   };
 
   useEffect(() => {
@@ -147,7 +143,9 @@ function App() {
   return (
     <div className='App'>
       <h2 className='main-title'>Phonebook</h2>
-      <Notification error={errormsg} close={closeNotification} />
+      {notification && (
+        <Notification notification={notification} close={closeNotification} />
+      )}
       <PersonForm
         handleNameChange={handleNameChange}
         handleNumberChange={handleNumberChange}

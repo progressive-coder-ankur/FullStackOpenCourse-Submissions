@@ -7,7 +7,6 @@ const app = express();
 
 const PORT = process.env.PORT || 3001;
 const Person = require('./models/person');
-const { query } = require('express');
 app.use(express.static('build'));
 app.use(express.json());
 app.use(cors());
@@ -68,8 +67,8 @@ app.post('/api/persons', (request, response, next) => {
 
   person
     .save()
-    .then(saved => {
-      response.json(saved);
+    .then(savedPerson => {
+      response.json(savedPerson);
     })
     .catch(error => next(error.message));
 });
@@ -94,10 +93,10 @@ app.put('/api/persons/:id', (request, response, next) => {
   Person.findByIdAndUpdate(request.params.id, person, {
     new: true,
     runValidators: true,
-    context: query,
+    context: 'query',
   })
-    .then(result => {
-      response.json(result);
+    .then(updatedPerson => {
+      response.json(updatedPerson);
     })
     .catch(error => next(error));
 });

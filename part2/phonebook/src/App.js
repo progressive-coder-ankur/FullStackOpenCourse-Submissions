@@ -86,13 +86,13 @@ function App() {
         .catch(error => {
           console.log(error);
           setNotification({
-            msg: `Something went wrong, ${error.response.data}`,
+            msg: `${error.response.data}`,
             type: 'error',
           });
 
-          setTimeout(() => {
-            setNotification(null);
-          }, 5000);
+          // setTimeout(() => {
+          //   setNotification(null);
+          // }, 5000);
         });
     }
     setNewPerson('');
@@ -141,11 +141,19 @@ function App() {
   }, []);
 
   return (
-    <div className='App'>
-      <h2 className='main-title'>Phonebook</h2>
-      {notification && (
-        <Notification notification={notification} close={closeNotification} />
-      )}
+    <div className='App grid'>
+      <div className='header'>
+        <h2 className='main-title'>Phonebook</h2>
+        {notification && (
+          <Notification notification={notification} close={closeNotification} />
+        )}
+      </div>
+      <div className='search-field'>
+        <Filter
+          searchValue={searchValue}
+          handleSearchChange={handleSearchChange}
+        />
+      </div>
       <PersonForm
         handleNameChange={handleNameChange}
         handleNumberChange={handleNumberChange}
@@ -153,22 +161,15 @@ function App() {
         newPerson={newPerson}
         newNumber={newNumber}
       />
-
-      <div className='search-section'>
+      <div className='right'>
         <h3>Numbers</h3>
-
-        <Filter
+        <Persons
           searchValue={searchValue}
-          handleSearchChange={handleSearchChange}
+          persons={persons}
+          filteredPersons={filteredPersons}
+          handleDelete={handleDelete}
         />
       </div>
-
-      <Persons
-        searchValue={searchValue}
-        persons={persons}
-        filteredPersons={filteredPersons}
-        handleDelete={handleDelete}
-      />
     </div>
   );
 }
